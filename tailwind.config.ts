@@ -118,6 +118,13 @@ const config: Config = {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			backgroundImage: {
+				'gradient-primary': 'linear-gradient(to right, var(--tw-gradient-stops))',
+			},
+			gradientColorStops: {
+				'primary-600': '#2563EB',
+				'secondary-600': '#059669',
 			}
 		}
 	},
