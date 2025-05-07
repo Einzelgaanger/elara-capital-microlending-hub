@@ -30,14 +30,15 @@ export interface Loan {
   payment_method: string;
   payment_details: string;
   status: LoanStatus;
-  approved_by?: string;
-  approved_at?: string;
-  allocated_at?: string;
-  remaining_amount?: number;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  allocated_at?: string | null;
+  remaining_amount?: number | null;
   created_at: string;
   updated_at: string;
 }
 
+// Update LoanStatus to be a union of string literals to ensure type compatibility
 export type LoanStatus = "pending" | "approved" | "rejected" | "allocated" | "repaid";
 
 export interface Payment {

@@ -5,16 +5,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loan, Payment } from "@/types";
+import { Loan, Payment, LoanStatus } from "@/types";
 import { format } from "date-fns";
 
 export default function LoanDetailsPage() {
   const { loanId } = useParams<{ loanId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const [loan, setLoan] = useState<Loan | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -34,7 +33,12 @@ export default function LoanDetailsPage() {
           .single();
 
         if (loanError) throw loanError;
-        setLoan(loanData);
+        
+        // Type assertion to ensure data is compatible with Loan type
+        setLoan({
+          ...loanData,
+          status: loanData.status as LoanStatus
+        });
 
         // Fetch payments if loan is allocated or repaid
         if (['allocated', 'repaid'].includes(loanData.status)) {
@@ -49,11 +53,7 @@ export default function LoanDetailsPage() {
         }
       } catch (error: any) {
         console.error("Error fetching loan details:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load loan details. Please try again.",
-        });
+        toast.error("Failed to load loan details. Please try again.");
         navigate("/dashboard");
       } finally {
         setIsLoading(false);
@@ -61,10 +61,10 @@ export default function LoanDetailsPage() {
     };
 
     fetchLoanDetails();
-  }, [user, loanId, navigate, toast]);
+  }, [user, loanId, navigate]);
 
   // Helper function to get status badge
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: LoanStatus) => {
     const statusClasses = {
       pending: "bg-yellow-100 text-yellow-800",
       approved: "bg-blue-100 text-blue-800",
@@ -74,7 +74,7 @@ export default function LoanDetailsPage() {
     };
 
     return (
-      <Badge className={`${statusClasses[status as keyof typeof statusClasses]} capitalize px-3 py-1 text-sm`}>
+      <Badge className={`${statusClasses[status]} capitalize px-3 py-1 text-sm`}>
         {status}
       </Badge>
     );

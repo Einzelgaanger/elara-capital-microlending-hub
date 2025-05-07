@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,14 +23,13 @@ import {
   recordPayment,
   fetchPaymentsForLoan,
 } from "@/lib/api";
-import { Loan, Payment, UserProfile } from "@/types";
+import { Loan, Payment, UserProfile, LoanStatus } from "@/types";
 import { format } from "date-fns";
 
 export default function AdminLoanDetailsPage() {
   const { loanId } = useParams<{ loanId: string }>();
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const [loan, setLoan] = useState<Loan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -51,7 +49,11 @@ export default function AdminLoanDetailsPage() {
 
       try {
         const loanData = await fetchLoanById(loanId);
-        setLoan(loanData);
+        // Type assertion to ensure data is compatible with Loan type
+        setLoan({
+          ...loanData,
+          status: loanData.status as LoanStatus
+        });
         
         const profileData = await fetchUserProfile(loanData.user_id);
         setProfile(profileData);
@@ -62,11 +64,7 @@ export default function AdminLoanDetailsPage() {
         }
       } catch (error) {
         console.error("Error loading loan data:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load loan data. Please try again.",
-        });
+        toast.error("Failed to load loan data. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -75,26 +73,23 @@ export default function AdminLoanDetailsPage() {
     if (user && !loading) {
       loadLoanData();
     }
-  }, [user, loanId, loading, toast]);
+  }, [user, loanId, loading]);
 
   const handleApproveLoan = async () => {
     if (!loan || !user) return;
     
     try {
       const updatedLoan = await updateLoanStatus(loan.id, "approved", user.id);
-      setLoan(updatedLoan);
-      toast({
-        title: "Loan Approved",
-        description: "The loan application has been approved successfully.",
+      // Type assertion to ensure data is compatible with Loan type
+      setLoan({
+        ...updatedLoan,
+        status: updatedLoan.status as LoanStatus
       });
+      toast.success("The loan application has been approved successfully.");
       setApproveDialogOpen(false);
     } catch (error) {
       console.error("Error approving loan:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to approve the loan. Please try again.",
-      });
+      toast.error("Failed to approve the loan. Please try again.");
     }
   };
 
@@ -103,19 +98,16 @@ export default function AdminLoanDetailsPage() {
     
     try {
       const updatedLoan = await updateLoanStatus(loan.id, "rejected");
-      setLoan(updatedLoan);
-      toast({
-        title: "Loan Rejected",
-        description: "The loan application has been rejected.",
+      // Type assertion to ensure data is compatible with Loan type
+      setLoan({
+        ...updatedLoan,
+        status: updatedLoan.status as LoanStatus
       });
+      toast.success("The loan application has been rejected.");
       setRejectDialogOpen(false);
     } catch (error) {
       console.error("Error rejecting loan:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to reject the loan. Please try again.",
-      });
+      toast.error("Failed to reject the loan. Please try again.");
     }
   };
 
@@ -127,19 +119,16 @@ export default function AdminLoanDetailsPage() {
       const updatedLoan = await updateLoanStatus(loan.id, "allocated", undefined, {
         remaining_amount: loan.amount + (loan.amount * 0.3)
       });
-      setLoan(updatedLoan);
-      toast({
-        title: "Loan Allocated",
-        description: "The loan has been marked as allocated successfully.",
+      // Type assertion to ensure data is compatible with Loan type
+      setLoan({
+        ...updatedLoan,
+        status: updatedLoan.status as LoanStatus
       });
+      toast.success("The loan has been marked as allocated successfully.");
       setAllocateDialogOpen(false);
     } catch (error) {
       console.error("Error allocating loan:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to allocate the loan. Please try again.",
-      });
+      toast.error("Failed to allocate the loan. Please try again.");
     }
   };
 
@@ -149,11 +138,7 @@ export default function AdminLoanDetailsPage() {
     const amount = Number(paymentAmount);
     
     if (isNaN(amount) || amount <= 0) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Amount",
-        description: "Please enter a valid payment amount greater than 0.",
-      });
+      toast.error("Please enter a valid payment amount greater than 0.");
       return;
     }
     
@@ -168,29 +153,26 @@ export default function AdminLoanDetailsPage() {
       
       // Refresh the loan and payments data
       const updatedLoan = await fetchLoanById(loan.id);
-      setLoan(updatedLoan);
+      // Type assertion to ensure data is compatible with Loan type
+      setLoan({
+        ...updatedLoan,
+        status: updatedLoan.status as LoanStatus
+      });
       
       const updatedPayments = await fetchPaymentsForLoan(loan.id);
       setPayments(updatedPayments);
       
-      toast({
-        title: "Payment Recorded",
-        description: `Payment of KSh ${amount.toLocaleString()} has been recorded successfully.`,
-      });
+      toast.success(`Payment of KSh ${amount.toLocaleString()} has been recorded successfully.`);
       setPaymentDialogOpen(false);
       setPaymentAmount("");
     } catch (error) {
       console.error("Error recording payment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to record the payment. Please try again.",
-      });
+      toast.error("Failed to record the payment. Please try again.");
     }
   };
 
   // Helper function to get status badge
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: LoanStatus) => {
     const statusClasses = {
       pending: "bg-yellow-100 text-yellow-800",
       approved: "bg-blue-100 text-blue-800",
@@ -200,7 +182,7 @@ export default function AdminLoanDetailsPage() {
     };
 
     return (
-      <Badge variant="outline" className={`${statusClasses[status as keyof typeof statusClasses]} capitalize px-3 py-1 text-sm`}>
+      <Badge variant="outline" className={`${statusClasses[status]} capitalize px-3 py-1 text-sm`}>
         {status}
       </Badge>
     );

@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@/components/ui/sonner";
 
 // Fetch user profile by user ID
 export const fetchUserProfile = async (userId: string) => {
@@ -12,11 +12,7 @@ export const fetchUserProfile = async (userId: string) => {
 
   if (error) {
     console.error("Error fetching user profile:", error);
-    toast({
-      variant: "destructive",
-      title: "Failed to load profile",
-      description: error.message,
-    });
+    toast.error("Failed to load profile: " + error.message);
     throw error;
   }
 
@@ -33,11 +29,7 @@ export const fetchLoanById = async (loanId: string) => {
 
   if (error) {
     console.error("Error fetching loan:", error);
-    toast({
-      variant: "destructive",
-      title: "Failed to load loan details",
-      description: error.message,
-    });
+    toast.error("Failed to load loan details: " + error.message);
     throw error;
   }
 
@@ -51,7 +43,7 @@ export const updateLoanStatus = async (
   approvedBy?: string,
   additionalData: Record<string, any> = {}
 ) => {
-  const updateData = {
+  const updateData: Record<string, any> = {
     status,
     ...additionalData
   };
@@ -72,11 +64,7 @@ export const updateLoanStatus = async (
 
   if (error) {
     console.error(`Error updating loan status to ${status}:`, error);
-    toast({
-      variant: "destructive",
-      title: "Failed to update loan",
-      description: error.message,
-    });
+    toast.error("Failed to update loan: " + error.message);
     throw error;
   }
 
@@ -99,11 +87,7 @@ export const recordPayment = async (payment: {
 
   if (paymentError) {
     console.error("Error recording payment:", paymentError);
-    toast({
-      variant: "destructive",
-      title: "Failed to record payment",
-      description: paymentError.message,
-    });
+    toast.error("Failed to record payment: " + paymentError.message);
     throw paymentError;
   }
 
@@ -160,11 +144,7 @@ export const fetchPaymentsForLoan = async (loanId: string) => {
 
   if (error) {
     console.error("Error fetching payments:", error);
-    toast({
-      variant: "destructive",
-      title: "Failed to load payments",
-      description: error.message,
-    });
+    toast.error("Failed to load payments: " + error.message);
     throw error;
   }
 

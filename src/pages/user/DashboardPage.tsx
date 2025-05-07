@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Loan, UserProfile } from "@/types";
+import { Loan, UserProfile, LoanStatus } from "@/types";
+import { toast } from "@/components/ui/sonner";
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
@@ -28,8 +29,9 @@ export default function DashboardPage() {
 
         if (error) throw error;
         setProfile(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile: " + error.message);
       } finally {
         setIsLoadingProfile(false);
       }
@@ -46,9 +48,17 @@ export default function DashboardPage() {
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        setLoans(data || []);
-      } catch (error) {
+        
+        // Type assertion to ensure data is compatible with Loan[]
+        const typedLoans = data?.map(loan => ({
+          ...loan,
+          status: loan.status as LoanStatus
+        })) || [];
+        
+        setLoans(typedLoans);
+      } catch (error: any) {
         console.error("Error fetching loans:", error);
+        toast.error("Failed to load loans: " + error.message);
       } finally {
         setIsLoadingLoans(false);
       }
