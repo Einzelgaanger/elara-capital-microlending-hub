@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -31,10 +30,10 @@ const schema = z.object({
   amount: z.string().refine(
     (val) => {
       const amount = parseInt(val, 10);
-      return !isNaN(amount) && amount >= 1000 && amount <= 100000;
+      return !isNaN(amount) && amount >= 100000 && amount <= 500000;
     },
     {
-      message: "Amount must be between KSh 1,000 and KSh 100,000",
+      message: "Amount must be between KSh 100,000 and KSh 500,000",
     }
   ),
   repaymentPeriod: z.string().refine(
@@ -106,11 +105,24 @@ export default function LoanApplicationPage() {
 
   const calculateInterest = () => {
     const amount = parseInt(form.watch("amount") || "0", 10);
-    return isNaN(amount) ? 0 : amount * 0.3;
+    if (isNaN(amount)) return 0;
+    
+    if (amount <= 100000) return amount * 0.30;
+    if (amount <= 200000) return amount * 0.25;
+    return amount * 0.20;
+  };
+
+  const calculateProcessingFee = () => {
+    const amount = parseInt(form.watch("amount") || "0", 10);
+    if (isNaN(amount)) return 0;
+    
+    if (amount < 100000) return 5000;
+    return amount * 0.05;
   };
 
   const calculatedInterest = calculateInterest();
-  const totalRepayment = parseInt(form.watch("amount") || "0", 10) + calculatedInterest;
+  const processingFee = calculateProcessingFee();
+  const totalRepayment = parseInt(form.watch("amount") || "0", 10) + calculatedInterest + processingFee;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,10 +159,10 @@ export default function LoanApplicationPage() {
                       <FormItem>
                         <FormLabel>Loan Amount (KSh)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} min="1000" max="100000" />
+                          <Input type="number" {...field} min="100000" max="500000" />
                         </FormControl>
                         <FormDescription>
-                          Enter an amount between KSh 1,000 and KSh 100,000
+                          Enter an amount between KSh 100,000 and KSh 500,000
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -280,8 +292,23 @@ export default function LoanApplicationPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Interest (30%)</p>
+                  <p className="text-sm text-gray-500">Interest Rate</p>
+                  <p className="text-lg font-medium">
+                    {(() => {
+                      const amount = parseInt(form.watch("amount") || "0", 10);
+                      if (amount <= 100000) return "30%";
+                      if (amount <= 200000) return "25%";
+                      return "20%";
+                    })()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Interest Amount</p>
                   <p className="text-lg font-medium">KSh {calculatedInterest.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Processing Fee</p>
+                  <p className="text-lg font-medium">KSh {processingFee.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Repayment</p>

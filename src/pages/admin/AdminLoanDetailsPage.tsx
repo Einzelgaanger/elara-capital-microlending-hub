@@ -188,6 +188,27 @@ export default function AdminLoanDetailsPage() {
     );
   };
 
+  // Calculate interest based on amount
+  const calculateInterest = (amount: number) => {
+    if (amount <= 100000) return amount * 0.30;
+    if (amount <= 200000) return amount * 0.25;
+    return amount * 0.20;
+  };
+
+  // Calculate processing fee
+  const calculateProcessingFee = (amount: number) => {
+    if (amount < 100000) return 5000;
+    return amount * 0.05;
+  };
+
+  // Calculate interest and total repayment
+  const interest = calculateInterest(loan.amount);
+  const processingFee = calculateProcessingFee(loan.amount);
+  const totalRepayment = loan.amount + interest + processingFee;
+
+  // Calculate total payments made
+  const totalPaidAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
@@ -233,13 +254,6 @@ export default function AdminLoanDetailsPage() {
       </div>
     );
   }
-
-  // Calculate interest and total repayment
-  const interest = loan.amount * 0.3;
-  const totalRepayment = loan.amount + interest;
-
-  // Calculate total payments made
-  const totalPaidAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -431,8 +445,22 @@ export default function AdminLoanDetailsPage() {
                     <p className="text-lg font-semibold">KSh {loan.amount.toLocaleString()}</p>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500">Interest (30%)</h3>
+                    <h3 className="text-sm font-medium text-gray-500">Interest Rate</h3>
+                    <p className="text-lg font-semibold">
+                      {(() => {
+                        if (loan.amount <= 100000) return "30%";
+                        if (loan.amount <= 200000) return "25%";
+                        return "20%";
+                      })()}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Interest Amount</h3>
                     <p className="text-lg font-semibold">KSh {interest.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Processing Fee</h3>
+                    <p className="text-lg font-semibold">KSh {processingFee.toLocaleString()}</p>
                   </div>
                   <div className="pt-4 border-t border-gray-200">
                     <h3 className="text-sm font-medium text-gray-500">Total Repayment</h3>
