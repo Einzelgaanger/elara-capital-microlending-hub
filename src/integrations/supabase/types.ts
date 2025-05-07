@@ -9,13 +9,170 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      loans: {
+        Row: {
+          allocated_at: string | null
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          payment_details: string
+          payment_method: string
+          purpose: string
+          remaining_amount: number | null
+          repayment_period: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allocated_at?: string | null
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          payment_details: string
+          payment_method: string
+          purpose: string
+          remaining_amount?: number | null
+          repayment_period: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allocated_at?: string | null
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          payment_details?: string
+          payment_method?: string
+          purpose?: string
+          remaining_amount?: number | null
+          repayment_period?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          loan_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date: string
+          id?: string
+          loan_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          loan_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          date_of_birth: string
+          designation: string | null
+          employer_address: string | null
+          employer_name: string | null
+          first_name: string
+          id: string
+          last_name: string
+          middle_name: string | null
+          national_id: string
+          next_of_kin_name: string
+          next_of_kin_phone: string
+          next_of_kin_relationship: string
+          occupation: string
+          residential_address: string
+          terms_accepted: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth: string
+          designation?: string | null
+          employer_address?: string | null
+          employer_name?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          middle_name?: string | null
+          national_id: string
+          next_of_kin_name: string
+          next_of_kin_phone: string
+          next_of_kin_relationship: string
+          occupation: string
+          residential_address: string
+          terms_accepted?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string
+          designation?: string | null
+          employer_address?: string | null
+          employer_name?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          middle_name?: string | null
+          national_id?: string
+          next_of_kin_name?: string
+          next_of_kin_phone?: string
+          next_of_kin_relationship?: string
+          occupation?: string
+          residential_address?: string
+          terms_accepted?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
